@@ -1,0 +1,51 @@
+#ifndef HIERARCHICAL_DS_H
+#define HIERARCHICAL_DS_H
+
+#include "inventory.h"
+
+// 1. Binary Search Tree (BST) Node
+typedef struct BSTNode {
+    Item data;
+    struct BSTNode* left;
+    struct BSTNode* right;
+} BSTNode;
+
+BSTNode* create_bst_node(Item item);
+BSTNode* insert_bst(BSTNode* root, Item item);
+BSTNode* search_bst_by_id(BSTNode* root, int id);
+BSTNode* search_bst_by_name(BSTNode* root, const char* name);
+
+// Tree Traversals
+void inorder_traversal(BSTNode* root);
+void preorder_traversal(BSTNode* root);
+void postorder_traversal(BSTNode* root);
+void free_bst(BSTNode* root);
+
+// 2. Graph Representation (Warehouse Aisles & Zones Map)
+#define MAX_GRAPH_NODES 15
+
+typedef struct GraphAdjNode {
+    int dest;
+    int weight; // Distance/time in meters or seconds
+    struct GraphAdjNode* next;
+} GraphAdjNode;
+
+typedef struct GraphNodeInfo {
+    int id;
+    char name[40];
+} GraphNodeInfo;
+
+typedef struct WarehouseGraph {
+    int num_vertices;
+    GraphNodeInfo vertices[MAX_GRAPH_NODES];
+    GraphAdjNode* adj_list[MAX_GRAPH_NODES];
+    int adj_matrix[MAX_GRAPH_NODES][MAX_GRAPH_NODES];
+} WarehouseGraph;
+
+WarehouseGraph* create_warehouse_graph(int num_vertices);
+void add_warehouse_edge(WarehouseGraph* graph, int src, int dest, int weight);
+void bfs_traversal(WarehouseGraph* graph, int start_vertex);
+void dfs_traversal(WarehouseGraph* graph, int start_vertex);
+void free_warehouse_graph(WarehouseGraph* graph);
+
+#endif // HIERARCHICAL_DS_H
