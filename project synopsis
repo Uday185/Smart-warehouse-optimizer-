@@ -1,0 +1,39 @@
+# Smart Warehouse and Inventory Management System
+
+## Project Synopsis
+
+The Smart Warehouse and Inventory Management System is a Data
+Structures and Algorithms based project developed in C. The system
+is designed to manage product information and demonstrate the
+practical application of various data structures and algorithms.
+
+The project uses linked lists for product management, stacks for
+undo/redo operations, queues for warehouse processing, binary
+search trees for organized product storage, and graphs for
+representing warehouse relationships.
+
+## Objectives
+
+- Manage product information efficiently
+- Demonstrate Linked List operations
+- Implement Stack and Queue
+- Implement Binary Search Tree
+- Perform BFS and DFS
+- Implement searching and sorting algorithms
+- Compare algorithm performance
+
+## Technologies Used
+
+- C Programming
+- Data Structures and Algorithms
+- VS Code
+
+## Project Features
+
+- Add, delete and search products
+- Display product inventory
+- Undo/Redo operations
+- Product searching
+- Sorting products
+- BFS and DFS traversal
+- Binary tree traversal
