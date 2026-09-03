@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Warehouse Optimizer</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <header class="header">
+        <div class="logo-container">
+            <i class="fa-solid fa-boxes-stacked logo-icon"></i>
+            <div>
+                <h1 class="logo-title">Smart Warehouse Optimizer</h1>
+                
+            </div>
+        </div>
+        <nav class="nav-tabs">
+            <button class="tab-btn active" onclick="switchTab('inventoryTab')">
+                <i class="fa-solid fa-list-check"></i> Inventory Control
+            </button>
+            <button class="tab-btn" onclick="switchTab('dsaTab')">
+                <i class="fa-solid fa-diagram-project"></i> City Stock Audit
+            </button>
+            <button class="tab-btn" onclick="switchTab('routeTab')">
+                <i class="fa-solid fa-map-location-dot"></i> Delivery Route Planner
+            </button>
+            <button class="tab-btn" onclick="switchTab('knapsackTab')">
+                <i class="fa-solid fa-truck-ramp-box"></i> Load Optimizer
+            </button>
+            <button class="tab-btn" onclick="switchTab('benchmarkTab')">
+                <i class="fa-solid fa-chart-line"></i> Sales Performance
+            </button>
+        </nav>
+    </header>
+
+    <main class="main-content">
+
+        <!-- TAB 1: INVENTORY MANAGER -->
+        <section id="inventoryTab" class="tab-content active">
+            <div class="card-grid">
+                <div class="glass-card" style="grid-column: span 2;">
+                    <div class="card-header">
+                        <h2 class="card-title"><i class="fa-solid fa-warehouse"></i> Inventory Stock Catalog (Live Product Ledger)</h2>
+                        <button class="btn btn-secondary" onclick="fetchInventory()"><i class="fa-solid fa-rotate-right"></i> Refresh</button>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Item ID</th>
+                                    <th>Item Name</th>
+                                    <th>Category</th>
+                                    <th>Stock</th>
+                                    <th>Unit Price</th>
+                                    <th>Weight (kg)</th>
+                                    <th>City</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventoryTableBody">
+                                <!-- Populated dynamically from C binary -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="glass-card">
+                    <div class="card-header">
+                        <h2 class="card-title"><i class="fa-solid fa-chart-pie"></i> Inventory Summary</h2>
+                    </div>
+                    <div style="display: grid; gap: 0.8rem;">
+                        <div class="summary-box">
+                            <span>Total Units</span>
+                            <strong id="totalUnits">0</strong>
+                        </div>
+                        <div class="summary-box">
+                            <span>Inventory Value</span>
+                            <strong id="inventoryValue">₹0</strong>
+                        </div>
+                        <div class="summary-box">
+                            <span>Supplier Count</span>
+                            <strong id="supplierCount">0</strong>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <h4 style="margin-bottom: 0.5rem; color: var(--accent-cyan);">City Stock Summary</h4>
+                        <div id="citySummary" class="mini-list"></div>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <h4 style="margin-bottom: 0.5rem; color: var(--accent-cyan);">Supplier Summary</h4>
+                        <div id="supplierSummary" class="mini-list"></div>
+                    </div>
+                </div>
+
+                <div class="glass-card" style="grid-column: span 2;">
+                    <div class="card-header">
+                        <h2 class="card-title"><i class="fa-solid fa-plus-circle"></i> Stock Operations</h2>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(3, minmax(180px, 1fr)); gap: 1rem;">
+                        <div>
+                            <h4>Add Item</h4>
+                            <div class="form-group">
+                                <label>Item Name</label>
+                                <input type="text" id="addItemName" placeholder="e.g. USB Hub" />
+                            </div>
+                            <div class="form-group">
+                                <label>Category</label>
+                                <input type="text" id="addItemCategory" placeholder="e.g. Accessories" />
+                            </div>
+                            <div class="form-group">
+                                <label>Supplier</label>
+                                <input type="text" id="addItemSupplier" placeholder="e.g. PrimeTech" />
+                            </div>
+                            <div class="form-group">
+                                <label>City</label>
+                                <select id="addItemCity">
+                                    <option value="Bangalore">Bangalore</option>
+                                    <option value="Chennai">Chennai</option>
+                                    <option value="Kolkata">Kolkata</option>
+                                    <option value="Delhi">Delhi</option>
+                                    <option value="Mumbai">Mumbai</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Price (₹)</label>
+                                <input type="number" id="addItemPrice" min="0" step="0.01" value="1500" />
+                            </div>
+                            <div class="form-group">
+                                <label>GST %</label>
+                                <input type="number" id="addItemGst" min="0" step="1" value="18" />
+                            </div>
+                            <div class="form-group">
+                                <label>Stock Qty</label>
+                                <input type="number" id="addItemQty" min="0" value="25" />
+                            </div>
+                            <button class="btn" onclick="addInventoryItem()">Add Item</button>
+                        </div>
+
+                        <div>
+                            <h4>Update Item</h4>
+                            <div class="form-group">
+                                <label>Select Item</label>
+                                <select id="editItemSelect"></select>
+                            </div>
+                            <div class="form-group">
+                                <label>New Qty</label>
+                                <input type="number" id="editItemQty" min="0" value="10" />
+                            </div>
+                            <div class="form-group">
+                                <label>New Price (₹)</label>
+                                <input type="number" id="editItemPrice" min="0" step="0.01" value="1500" />
+                            </div>
+                            <div class="form-group">
+                                <label>GST %</label>
+                                <input type="number" id="editItemGst" min="0" step="1" value="18" />
+                            </div>
+                            <button class="btn btn-secondary" onclick="updateInventoryItem()">Update Item</button>
+                        </div>
+
+                        <div>
+                            <h4>Delete Item</h4>
+                            <div class="form-group">
+                                <label>Select Item</label>
+                                <select id="deleteItemSelect"></select>
+                            </div>
+                            <button class="btn btn-secondary" onclick="deleteInventoryItem()">Delete Item</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card">
+                    <div class="card-header">
+                        <h2 class="card-title"><i class="fa-solid fa-calculator"></i> GST Pricing Calculator</h2>
+                    </div>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+                        Calculates GST-inclusive price for customer invoices.
+                    </p>
+                    <div class="form-group">
+                        <label>Pricing Formula (e.g. 2499.99 * 0.90 + 15):</label>
+                        <input type="text" id="exprInput" value="2499.99 * 0.90 + 15">
+                    </div>
+                    <button class="btn" onclick="evaluateExpression()"><i class="fa-solid fa-play"></i> Calculate Price</button>
+                    <div id="exprResult" style="margin-top: 1rem; font-weight: 600; color: var(--accent-cyan);"></div>
+                </div>
+
+                <div class="glass-card">
+                    <div class="card-header">
+                        <h2 class="card-title"><i class="fa-solid fa-receipt"></i> Sales Order Tracker</h2>
+                    </div>
+                    <div class="form-group">
+                        <label>Product</label>
+                        <select id="orderItemSelect"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Customer Name</label>
+                        <input type="text" id="orderCustomer" placeholder="Customer name" />
+                    </div>
+                    <div class="form-group">
+                        <label>Quantity</label>
+                        <input type="number" id="orderQty" min="1" value="1" />
+                    </div>
+                    <button class="btn" onclick="createSalesOrder()">Create Order</button>
+                    <div style="margin-top: 1rem;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Order</th>
+                                    <th>Customer</th>
+                                    <th>Item</th>
+                                    <th>Qty</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="salesOrderTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- TAB 2: DSA & TRAVERSALS -->
+        <section id="dsaTab" class="tab-content">
+            <div class="card-grid">
+                <div class="glass-card">
+                    <div class="card-header">
+                        <h2 class="card-title"><i class="fa-solid fa-tree"></i> Inventory Index & City Stock Audit</h2>
+                    </div>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+                        Sorted product list and city-wise stock review for the distributor network.
+                    </p>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
+                        <button class="btn" onclick="runBstTraversal('inorder')">Sorted Catalog</button>
+                        <button class="btn btn-secondary" onclick="runBstTraversal('preorder')">Backup View</button>
+                        <button class="btn btn-secondary" onclick="runBstTraversal('postorder')">Audit View</button>
+                    </div>
+                    <div id="treeOutput" class="terminal-window" style="min-height: 180px;">
+                        Click a view button to review inventory records by city and stock level...
+                    </div>
+                </div>
+
+                <div class="glass-card">
+                    <div class="card-header">
+                        <h2 class="card-title"><i class="fa-solid fa-dolly"></i> Pending Order Queue (FIFO)</h2>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Customer</th>
+                                    <th>Item</th>
+                                    <th>Qty</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>#501</td><td>Acme Logistics</td><td>Barcode Scanner Pro</td><td>4</td><td><span style="color: var(--accent-amber);">PENDING</span></td></tr>
+                                <tr><td>#502</td><td>RoboTech Inc</td><td>Automated Guided Vehicle</td><td>1</td><td><span style="color: var(--accent-amber);">PENDING</span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- TAB 3: WAREHOUSE MAP & DIJKSTRA -->
+        <section id="routeTab" class="tab-content">
+            <div class="card-grid">
+                <div class="glass-card" style="grid-column: span 2;">
+                    <div class="card-header">
+                        <h2 class="card-title"><i class="fa-solid fa-route"></i> Metro Distribution Map & Fastest Delivery Routes</h2>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn btn-secondary" onclick="triggerGraphTraversal('bfs')">City Network View</button>
+                            <button class="btn btn-secondary" onclick="triggerGraphTraversal('dfs')">Dispatch Scan</button>
+                        </div>
+                    </div>
+                    <canvas id="warehouseCanvas" width="800" height="380"></canvas>
+                </div>
+
+                <div class="glass-card">
+                    <div class="card-header">
+                        <h2 class="card-title"><i class="fa-solid fa-location-arrow"></i> Calculate Item Picking Path</h2>
+                    </div>
+                    <div class="form-group">
+                        <label>Start City:</label>
+                        <select id="srcZone">
+                            <option value="0">Bangalore</option>
+                            <option value="1">Chennai</option>
+                            <option value="2">Kolkata</option>
+                            <option value="3">Delhi</option>
+                            <option value="4">Mumbai</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Destination City:</label>
+                        <select id="destZone">
+                            <option value="0">Bangalore</option>
+                            <option value="1">Chennai</option>
+                            <option value="2">Kolkata</option>
+                            <option value="3">Delhi</option>
+                            <option value="4" selected>Mumbai</option>
+                        </select>
+                    </div>
+                    <button class="btn" onclick="calculateBestRoute()"><i class="fa-solid fa-bolt"></i> Find Best Route</button>
+                    <div id="routeResult" style="margin-top: 1rem; line-height: 1.5;"></div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- TAB 4: KNAPSACK PACKING -->
+        <section id="knapsackTab" class="tab-content">
+            <div class="card-grid">
+                <div class="glass-card">
+                    <div class="card-header">
+                        <h2 class="card-title"><i class="fa-solid fa-truck-loading"></i> Vehicle Load Optimizer</h2>
+                    </div>
+                    <div class="form-group">
+                        <label>Vehicle Maximum Load (kg): <span id="capVal" style="color: var(--accent-cyan); font-weight: 700;">200 kg</span></label>
+                        <input type="range" id="capacitySlider" min="50" max="600" step="10" value="200" oninput="document.getElementById('capVal').innerText = this.value + ' kg'">
+                    </div>
+                    <button class="btn" onclick="runLoadOptimization()"><i class="fa-solid fa-sliders"></i> Optimize Load Plan</button>
+                </div>
+
+                <div class="glass-card" style="grid-column: span 2;">
+                    <div class="card-header">
+                        <h2 class="card-title"><i class="fa-solid fa-scale-balanced"></i> Algorithm Optimization Comparison</h2>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div style="background: rgba(255, 255, 255, 0.03); padding: 1.2rem; border-radius: 12px; border: 1px solid var(--border-card);">
+                            <h3 style="color: var(--accent-cyan); font-size: 1rem; margin-bottom: 0.5rem;">Dynamic Programming (0/1)</h3>
+                            <div id="dpRes" style="font-size: 0.9rem; line-height: 1.6;">Click 'Run' to compute optimal value...</div>
+                        </div>
+                        <div style="background: rgba(255, 255, 255, 0.03); padding: 1.2rem; border-radius: 12px; border: 1px solid var(--border-card);">
+                            <h3 style="color: var(--accent-purple); font-size: 1rem; margin-bottom: 0.5rem;">Greedy Technique (Fractional)</h3>
+                            <div id="greedyRes" style="font-size: 0.9rem; line-height: 1.6;">Click 'Run' to compute optimal value...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- TAB 5: SORT / SEARCH LAB -->
+        <section id="benchmarkTab" class="tab-content">
+            <div class="card-grid">
+                <div class="glass-card" style="grid-column: span 3;">
+                    <div class="card-header">
+                        <h2 class="card-title"><i class="fa-solid fa-stopwatch"></i> Sales & Inventory Performance Dashboard</h2>
+                        <button class="btn" onclick="runBenchmark()"><i class="fa-solid fa-vial"></i> Run Performance Report</button>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Algorithm</th>
+                                    <th>Category</th>
+                                    <th>Time Complexity</th>
+                                    <th>Comparisons</th>
+                                    <th>Swaps</th>
+                                    <th>Execution Time (ms)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="benchmarkTableBody">
+                                <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Click 'Execute Benchmark in C' to view performance analysis...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- LIVE C CONSOLE TERMINAL WINDOW -->
+        <div class="glass-card" style="margin-top: 2rem;">
+            <div class="card-header">
+                <h3 class="card-title" style="font-size: 0.95rem; color: var(--text-muted);"><i class="fa-solid fa-terminal"></i> Native C Executable Output Log</h3>
+            </div>
+            <div id="consoleLog" class="terminal-window">
+                <div class="terminal-line"><span class="terminal-prompt">$</span> Smart Warehouse C Core (warehouse.exe) bridge initialized.</div>
+            </div>
+        </div>
+
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
